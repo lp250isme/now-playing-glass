@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { NowPlaying } from 'now-playing-glass';
 import 'now-playing-glass/styles.css';
 
+const ART = 'https://is1-ssl.mzstatic.com/image/thumb';
 const SONGS = [
-  { name: 'Midnight City', artist: 'M83', art: 'https://picsum.photos/seed/midnight/300', color: '#7c5cff' },
-  { name: 'リライト', artist: 'ASIAN KUNG-FU GENERATION', art: 'https://picsum.photos/seed/rewrite/300', color: '#ff5c8a' },
-  { name: 'DRIP', artist: 'BABYMONSTER', art: 'https://picsum.photos/seed/babymonster/300', color: '#ff3b6b' },
-  { name: 'Topia', artist: 'Crystal Castles', art: 'https://picsum.photos/seed/topia/300', color: '#2fd6c4' },
+  { name: 'DRIP', artist: 'BABYMONSTER', color: '#ff3b6b', art: `${ART}/Music221/v4/b9/e1/ef/b9e1ef3a-e3eb-8152-e91b-20aca0fc9ffd/BM_DRIP_Digital-Cover_4000.jpg/600x600bb.jpg` },
+  { name: 'Midnight City', artist: 'M83', color: '#7c5cff', art: `${ART}/Music211/v4/cb/7b/a9/cb7ba903-b5f1-cc21-90db-7a81b7aa0997/724596951057.jpg/600x600bb.jpg` },
+  { name: 'リライト', artist: 'ASIAN KUNG-FU GENERATION', color: '#ff5c8a', art: `${ART}/Music221/v4/9b/90/54/9b90547e-6743-bd7b-4d17-c6a485c0124e/4560427295664.jpg/600x600bb.jpg` },
+  { name: 'Not In Love', artist: 'Crystal Castles', color: '#2fd6c4', art: `${ART}/Music113/v4/d2/8b/18/d28b1831-1fae-838d-2e03-60fa66cd6cfc/5400863128470_cover.jpg/600x600bb.jpg` },
 ];
 
 const q = (s) => encodeURIComponent(`${s.name} ${s.artist}`);
@@ -48,8 +49,13 @@ export default function App() {
   // ?open=1 → pop the mini open on load (handy for sharing a state / screenshots).
   useEffect(() => {
     if (params.get('open') !== '1') return;
-    const t = setTimeout(() => document.querySelector('.npg-disc-btn')?.click(), 350);
-    return () => clearTimeout(t);
+    let tries = 0;
+    const iv = setInterval(() => {
+      const btn = document.querySelector('.npg-disc-btn');
+      if (btn) { btn.click(); clearInterval(iv); }
+      else if (++tries > 40) clearInterval(iv);
+    }, 100);
+    return () => clearInterval(iv);
   }, []);
 
   const base = SONGS[idx];

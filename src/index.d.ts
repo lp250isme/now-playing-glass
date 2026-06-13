@@ -18,9 +18,9 @@ export interface NowPlayingSong {
 }
 
 export interface NowPlayingLabels {
-  /** Label shown when `nowplaying` is true. Default: "Now playing" / "正在聽". */
+  /** Label shown when `nowplaying` is true. Default: "Now playing" (or its zh equivalent when lang="zh"). */
   nowPlaying?: string;
-  /** Label shown otherwise. Default: "Recently played" / "最近在聽". */
+  /** Label shown otherwise. Default: "Recently played" (or its zh equivalent when lang="zh"). */
   recentlyPlayed?: string;
 }
 

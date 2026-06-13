@@ -108,8 +108,9 @@
   overflow: hidden; padding: 8px 16px 8px 60px;
   color: var(--npg-label); text-decoration: none;
 }
-/* align="right": 從右上角錨點往左長(放右上角才不會撐出畫面外)。
-   文字鏡像到右側貼著封面(否則文字留在左邊、和右側封面間出現突兀空隙)。 */
+/* align="right": grow left from a right anchor (so a right-corner placement
+   doesn't overflow). Mirror the text to the right so it hugs the cover
+   (otherwise it stays left, leaving an awkward gap before the right-side cover). */
 .npg-card--right { left: auto; right: 0; padding: 8px 60px 8px 16px; justify-content: flex-end; }
 .npg-card--right .npg-detail { text-align: right; }
 .npg-card--right .npg-label { justify-content: flex-end; }

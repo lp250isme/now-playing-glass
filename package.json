@@ -1,6 +1,6 @@
 {
   "name": "now-playing-glass",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A presentational React \"now playing\" widget — an album disc that taps open into a Dynamic-Island-style glass card (shared-element cover morph, equalizer, ambient backdrop, marquee). Bring your own data source (Last.fm, Spotify, Apple Music…).",
   "type": "module",
   "sideEffects": [

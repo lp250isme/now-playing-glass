@@ -94,7 +94,8 @@ export default function NowPlaying({
     // non-uniform geometry morph. The cover is a separate top layer that just
     // translates/scales between disc and card positions (always square, clean).
     const lt = reduce ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 40, mass: 0.7 };
-    // 展開方向:left = 從左上錨點往右長(預設);right = 從右上錨點往左長(放右上角才不會撐出畫面)。
+    // Expand direction: "left" grows right from a left anchor (default);
+    // "right" grows left from a right anchor (so a right-corner placement doesn't overflow).
     const grow = align === 'right' ? 'right' : 'left';
 
     const coverImg = song.art ? (
@@ -162,8 +163,8 @@ export default function NowPlaying({
                 {cardBody}
               </motion.a>
             ) : (
-              // 無連結:純資訊卡,不可互動(避免 div+onClick 鍵盤點不到的 a11y 坑);
-              // 開卡時已 onRefresh 過,不需再靠點卡刷新。
+              // No link: a non-interactive info card (avoids the div+onClick
+              // keyboard-inaccessible a11y trap); onRefresh already fired on open.
               <motion.div key="card" className={cardClass} {...cardMotion}>
                 {cardBody}
               </motion.div>
@@ -174,6 +175,9 @@ export default function NowPlaying({
         {/* cover: always present, top layer, click-through (clicks fall to disc/card below);
             translates+scales between disc and card positions (square, uniform, clean) */}
         <motion.div
+          // key by grow: if `align` flips at runtime, remount so no stale `left`/`right`
+          // inline style lingers (over-constrains the cover → it overflows the card edge).
+          key={grow}
           aria-hidden
           className="npg-cover"
           initial={false}
