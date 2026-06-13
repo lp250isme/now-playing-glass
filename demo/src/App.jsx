@@ -45,6 +45,14 @@ export default function App() {
   const [progress, setProgress] = useState(true);
   const [hover, setHover] = useState(false);
   const [idx, setIdx] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const copyInstall = () => {
+    const cmd = 'npm i now-playing-glass';
+    Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(cmd))
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 1400); })
+      .catch(() => {});
+  };
 
   useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
 
@@ -84,6 +92,10 @@ export default function App() {
           <a href="https://www.npmjs.com/package/now-playing-glass" target="_blank" rel="noreferrer">npm</a>
           <a href="https://github.com/lp250isme/now-playing-glass" target="_blank" rel="noreferrer">GitHub</a>
         </div>
+        <button type="button" className="install" onClick={copyInstall} aria-label="Copy install command">
+          <code>npm i now-playing-glass</code>
+          <span className="install-copy">{copied ? '✓ copied' : 'copy'}</span>
+        </button>
       </header>
 
       <section className="stage" data-align={align}>

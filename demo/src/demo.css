@@ -43,6 +43,22 @@ body {
 }
 .links a:hover { border-color: color-mix(in srgb, var(--label) 30%, transparent); }
 
+.install {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 12px; max-width: 100%;
+  padding: 7px 7px 7px 14px; border-radius: 12px; cursor: pointer; font: inherit;
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--label);
+}
+.install:hover { border-color: color-mix(in srgb, var(--label) 30%, transparent); }
+.install code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.install code::before { content: "$ "; color: var(--label-2); }
+.install .install-copy {
+  flex: none; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 8px;
+  background: var(--fill); color: var(--label-2);
+}
+
 .stage {
   position: relative; margin: 28px 0; height: 200px; border-radius: 22px;
   border: 1px solid var(--line); background: color-mix(in srgb, var(--bg-2) 60%, transparent);

@@ -1,6 +1,6 @@
 {
   "name": "now-playing-glass",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A presentational React \"now playing\" widget — an album disc that taps open into a Dynamic-Island-style glass card (shared-element cover morph, equalizer, ambient backdrop, marquee). Bring your own data source (Last.fm, Spotify, Apple Music…).",
   "type": "module",
   "sideEffects": [
@@ -30,13 +30,14 @@
     "build": "esbuild src/index.js src/lastfm.js --bundle --external:react --external:framer-motion --format=esm --outdir=dist --out-extension:.js=.js --banner:js=\"'use client';\" && esbuild src/index.js src/lastfm.js --bundle --external:react --external:framer-motion --format=cjs --outdir=dist --out-extension:.js=.cjs --banner:js=\"'use client';\" && cp src/styles.css dist/styles.css && cp src/index.d.ts src/lastfm.d.ts dist/",
     "prepare": "npm run build"
   },
+  "dependencies": {
+    "framer-motion": "^11"
+  },
   "peerDependencies": {
-    "react": ">=18",
-    "framer-motion": ">=11"
+    "react": ">=18"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
-    "framer-motion": "^11.18.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

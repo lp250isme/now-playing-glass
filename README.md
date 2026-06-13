@@ -23,10 +23,11 @@ no polling, no provider lock-in — pair it with whatever scrobbler/API you like
 ### Install
 
 ```bash
-npm i now-playing-glass framer-motion
+npm i now-playing-glass
 ```
 
-`react` (≥18) and `framer-motion` (≥11) are peer dependencies.
+`react` (≥18) is a peer dependency (your app already provides it). `framer-motion`
+ships as a dependency, so it installs automatically — nothing else to add.
 
 ### Use
 
@@ -154,10 +155,10 @@ Apple Music 都行）。
 ### 安裝
 
 ```bash
-npm i now-playing-glass framer-motion
+npm i now-playing-glass
 ```
 
-`react`（≥18）與 `framer-motion`（≥11）是 peer dependencies。
+`react`（≥18）是 peer dependency（你的 app 已提供）；`framer-motion` 是一般依賴、會自動裝，不用再加。
 
 ### 用法
 
