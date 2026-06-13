@@ -36,6 +36,7 @@ const textItem = {
 export default function NowPlaying({
   song,
   variant = 'card',
+  align = 'left',
   lang = 'en',
   labels,
   onRefresh,
@@ -52,8 +53,10 @@ export default function NowPlaying({
   useEffect(() => {
     if (!open) return;
     const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('pointerdown', onDoc);
-    return () => document.removeEventListener('pointerdown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('pointerdown', onDoc); document.removeEventListener('keydown', onKey); };
   }, [open]);
 
   // Measure whether the title overflows the fixed column; only then marquee it.
@@ -91,6 +94,8 @@ export default function NowPlaying({
     // non-uniform geometry morph. The cover is a separate top layer that just
     // translates/scales between disc and card positions (always square, clean).
     const lt = reduce ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 40, mass: 0.7 };
+    // 展開方向:left = 從左上錨點往右長(預設);right = 從右上錨點往左長(放右上角才不會撐出畫面)。
+    const grow = align === 'right' ? 'right' : 'left';
 
     const coverImg = song.art ? (
       // eslint-disable-next-line @next/next/no-img-element
@@ -103,8 +108,9 @@ export default function NowPlaying({
       initial: { opacity: 0, scale: 0.86 },
       animate: { opacity: 1, scale: 1, transition: lt },
       exit: { opacity: 0, scale: 0.92, transition: { duration: 0.12, ease: 'easeIn' } },
-      style: { borderRadius: 16, transformOrigin: '0% 0%' },
+      style: { borderRadius: 16, transformOrigin: grow === 'right' ? '100% 0%' : '0% 0%' },
     };
+    const cardClass = `npg-panel npg-card${grow === 'right' ? ' npg-card--right' : ''}`;
     const cardBody = (
       <>
         {song.art && (
@@ -152,11 +158,13 @@ export default function NowPlaying({
         <AnimatePresence>
           {open && (
             song.url ? (
-              <motion.a key="card" href={song.url} target="_blank" rel="noopener noreferrer" onClick={refresh} aria-label={`${label}: ${song.name} — ${song.artist}`} className="npg-panel npg-card" {...cardMotion}>
+              <motion.a key="card" href={song.url} target="_blank" rel="noopener noreferrer" onClick={refresh} aria-label={`${label}: ${song.name} — ${song.artist}`} className={cardClass} {...cardMotion}>
                 {cardBody}
               </motion.a>
             ) : (
-              <motion.div key="card" onClick={refresh} className="npg-panel npg-card" {...cardMotion}>
+              // 無連結:純資訊卡,不可互動(避免 div+onClick 鍵盤點不到的 a11y 坑);
+              // 開卡時已 onRefresh 過,不需再靠點卡刷新。
+              <motion.div key="card" className={cardClass} {...cardMotion}>
                 {cardBody}
               </motion.div>
             )
@@ -169,7 +177,7 @@ export default function NowPlaying({
           aria-hidden
           className="npg-cover"
           initial={false}
-          animate={open ? { top: 8, left: 8, width: 44, height: 44, borderRadius: 12 } : { top: 3, left: 3, width: 38, height: 38, borderRadius: 19 }}
+          animate={open ? { top: 8, [grow]: 8, width: 44, height: 44, borderRadius: 12 } : { top: 3, [grow]: 3, width: 38, height: 38, borderRadius: 19 }}
           transition={lt}
         >
           <span className={`npg-cover-inner${live && !open ? ' npg-disc' : ''}`}>

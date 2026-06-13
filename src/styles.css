@@ -106,8 +106,10 @@
   position: absolute; left: 0; top: 0; z-index: 10;
   display: flex; align-items: center; min-height: 60px; width: max-content;
   overflow: hidden; padding: 8px 16px 8px 60px;
-  color: var(--npg-label); text-decoration: none; cursor: pointer;
+  color: var(--npg-label); text-decoration: none;
 }
+/* align="right": 從右上角錨點往左長(放右上角才不會撐出畫面外) */
+.npg-card--right { left: auto; right: 0; padding: 8px 60px 8px 16px; }
 
 .npg-cover {
   position: absolute; z-index: 20; overflow: hidden; pointer-events: none;

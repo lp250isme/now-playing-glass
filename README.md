@@ -7,7 +7,9 @@ equalizer, blurred-cover ambient backdrop, gentle title marquee, live halo.
 
 [English](#english) | [繁體中文](#繁體中文)
 
-🔗 **Live demo:** [kvcc.me](https://kvcc.me) (the disc at the top-left corner)
+🔗 **Live demo:** [now-playing-glass.vercel.app](https://now-playing-glass.vercel.app) · in the wild: [kvcc.me](https://kvcc.me) (the disc at the top-left)
+
+![now-playing-glass](https://raw.githubusercontent.com/lp250isme/now-playing-glass/main/assets/demo.png)
 
 ---
 
@@ -38,24 +40,17 @@ function Header({ song, refetch }) {
     <NowPlaying
       song={song}            // null → renders nothing
       variant="mini"         // "mini" (disc → card morph) | "card" (static chip)
+      align="left"           // "left" | "right" — flip for right-corner placement
       lang="en"              // built-in labels: "en" | "zh"
-      onRefresh={refetch}    // fired on open/click — re-fetch so it shows the live track
+      onRefresh={refetch}    // fired on open — re-fetch so it shows the live track
     />
   );
 }
 ```
 
-Feed it from any source — a tiny Last.fm example:
-
-```jsx
-const [song, setSong] = useState(null);
-const load = useCallback(() => {
-  fetch('/api/now-playing').then(r => r.json()).then(d => setSong(d.song));
-}, []);
-useEffect(() => { load(); const id = setInterval(load, 25000); return () => clearInterval(id); }, [load]);
-
-<NowPlaying song={song} variant="mini" onRefresh={load} />
-```
+You can wire your own fetching, or use the bundled **`useNowPlaying`** hook,
+which handles initial load + polling + pause-while-hidden + on-demand refresh
+(see below). Either way the widget stays presentation-only.
 
 ### Props
 
@@ -63,15 +58,39 @@ useEffect(() => { load(); const id = setInterval(load, 25000); return () => clea
 |---|---|---|---|
 | `song` | `Song \| null` | — | `null` or no `name` → renders nothing |
 | `variant` | `"mini" \| "card"` | `"card"` | `mini` = disc that morphs open; `card` = static chip |
+| `align` | `"left" \| "right"` | `"left"` | (mini) expand direction — use `"right"` at a right-hand corner so the card doesn't overflow off-screen |
 | `lang` | `"en" \| "zh"` | `"en"` | built-in label language |
 | `labels` | `{ nowPlaying?, recentlyPlayed? }` | — | override labels for full i18n |
-| `onRefresh` | `() => void` | — | called on open/click — re-fetch your data here |
+| `onRefresh` | `() => void` | — | called when opened — re-fetch your data here |
 | `className` | `string` | — | extra class on the root |
 
 **`Song`**: `{ name, artist, art?, url?, nowplaying?, color? }`. Set
 `nowplaying: true` for the live treatment (halo + spinning cover + bouncing
 equalizer). `color` (e.g. a vibrant color extracted from the cover) tints the
 halo/equalizer; it falls back to green.
+
+### `useNowPlaying` (optional)
+
+Data-source-agnostic plumbing so you don't re-implement load + poll + refresh:
+
+```jsx
+import { NowPlaying, useNowPlaying } from 'now-playing-glass';
+
+const { song, refresh } = useNowPlaying({
+  // Return a Song, `null` to clear, or `undefined` to keep the current track.
+  // `fresh` is true on user-triggered refreshes — bust your cache then.
+  fetcher: ({ fresh }) =>
+    fetch(fresh ? `/api/now-playing?t=${Date.now()}` : '/api/now-playing')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => d?.song ?? null),
+  interval: 25000, // poll ms; pauses while the tab is hidden; 0 disables
+});
+
+<NowPlaying song={song} variant="mini" onRefresh={refresh} />;
+```
+
+It only touches `react` — your data source (Last.fm, Spotify, your own API
+route) stays entirely yours, so no provider lock-in and no exposed API keys.
 
 ### Theming
 
@@ -122,12 +141,14 @@ import 'now-playing-glass/styles.css';
 <NowPlaying
   song={song}            // null → 不渲染
   variant="mini"         // "mini"(圓盤→卡片形變) | "card"(靜態 chip)
+  align="left"           // "left" | "right" —— 放右上角就用 "right",卡片才不會撐出畫面
   lang="zh"              // 內建文案語言："en" | "zh"
-  onRefresh={refetch}    // 點開/點擊時觸發 —— 在這裡重抓資料,卡片才顯示「現在」這首
+  onRefresh={refetch}    // 點開時觸發 —— 在這裡重抓資料,卡片才顯示「現在」這首
 />
 ```
 
-它不抓資料，你從任何來源餵 `song` 進來即可（上面英文段有 Last.fm 範例）。
+它不抓資料：自己接 `song`，或用內建的 **`useNowPlaying`** hook（幫你處理
+首載＋輪詢＋背景分頁暫停＋手動刷新，見下方）。
 
 ### Props
 
@@ -135,14 +156,36 @@ import 'now-playing-glass/styles.css';
 |---|---|---|---|
 | `song` | `Song \| null` | — | `null` 或沒有 `name` → 不渲染 |
 | `variant` | `"mini" \| "card"` | `"card"` | `mini`＝圓盤形變展開；`card`＝靜態 chip |
+| `align` | `"left" \| "right"` | `"left"` | (mini) 展開方向；放右側角落用 `"right"`,卡片才不會超出畫面 |
 | `lang` | `"en" \| "zh"` | `"en"` | 內建文案語言 |
 | `labels` | `{ nowPlaying?, recentlyPlayed? }` | — | 覆寫文案，完整 i18n 控制 |
-| `onRefresh` | `() => void` | — | 點開/點擊時呼叫 —— 在此重抓資料 |
+| `onRefresh` | `() => void` | — | 點開時呼叫 —— 在此重抓資料 |
 | `className` | `string` | — | 根元素額外 class |
 
 **`Song`**：`{ name, artist, art?, url?, nowplaying?, color? }`。`nowplaying: true`
 進入 live 樣式（光環＋封面慢轉＋等化器跳動）；`color`（例如由封面抽出的
 vibrant 色）為光環/等化器上色，沒給就退回綠色。
+
+### `useNowPlaying`（選用）
+
+與資料源無關的 plumbing，免得每次重寫「首載＋輪詢＋刷新」：
+
+```jsx
+import { NowPlaying, useNowPlaying } from 'now-playing-glass';
+
+const { song, refresh } = useNowPlaying({
+  // 回傳 Song、null(清空) 或 undefined(維持現狀)。fresh=true 是使用者手動刷新 → 繞快取
+  fetcher: ({ fresh }) =>
+    fetch(fresh ? `/api/now-playing?t=${Date.now()}` : '/api/now-playing')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => d?.song ?? null),
+  interval: 25000, // 輪詢 ms;背景分頁自動暫停;0 = 不輪詢
+});
+
+<NowPlaying song={song} variant="mini" onRefresh={refresh} />;
+```
+
+只依賴 `react`，資料源（Last.fm / Spotify / 自家 API）完全是你的，不綁特定供應商、不外洩 key。
 
 ### 主題
 
