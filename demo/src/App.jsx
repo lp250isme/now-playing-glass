@@ -89,8 +89,8 @@ export default function App() {
           into a Dynamic-Island-style glass card.
         </p>
         <div className="links">
-          <a href="https://www.npmjs.com/package/now-playing-glass" target="_blank" rel="noreferrer">npm</a>
-          <a href="https://github.com/lp250isme/now-playing-glass" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://go.kvcc.me/now-playing-glass-npm" target="_blank" rel="noreferrer">npm</a>
+          <a href="https://go.kvcc.me/now-playing-glass-github" target="_blank" rel="noreferrer">GitHub</a>
         </div>
         <button type="button" className="install" onClick={copyInstall} aria-label="Copy install command">
           <code>npm i now-playing-glass</code>
