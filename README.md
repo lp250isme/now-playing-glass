@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/lp250isme/now-playing-glass/main/assets/icon.png" width="84" alt="now-playing-glass" />
+</p>
+
 # now-playing-glass — 正在聽玻璃小卡
 
 A presentational React **"now playing"** widget: an album disc that taps open
