@@ -1,0 +1,205 @@
+/* now-playing-glass — self-contained styles.
+ *
+ * Theme tokens fall back to liquid-glass-kit (--lg-*) / common app tokens
+ * (--label, --fill) when present, so the widget melts into an existing design
+ * system; otherwise the baked defaults below make it work out of the box.
+ * Dark mode: follows prefers-color-scheme, and an ancestor [data-theme] wins. */
+
+.now-playing-glass {
+  --npg-label: var(--label, #1c1c1e);
+  --npg-label-2: var(--label-2, rgba(60, 60, 67, 0.6));
+  --npg-label-3: var(--label-3, rgba(60, 60, 67, 0.45));
+  --npg-fill: var(--fill, rgba(118, 118, 128, 0.12));
+  --npg-accent: var(--np-accent, #34c759);
+  --npg-frost: var(--lg-frost, rgba(255, 255, 255, 0.5));
+  --npg-frost-strong: var(--lg-frost-strong, rgba(255, 255, 255, 0.62));
+  --npg-edge: var(--lg-edge, rgba(0, 0, 0, 0.12));
+  --npg-glow: var(--lg-glow, rgba(0, 0, 0, 0.05));
+  --npg-shadow: var(--lg-shadow, rgba(17, 17, 26, 0.08));
+  --npg-ambient-opacity: 0.34;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (prefers-color-scheme: dark) {
+  .now-playing-glass {
+    --npg-label: var(--label, #fff);
+    --npg-label-2: var(--label-2, rgba(235, 235, 245, 0.6));
+    --npg-label-3: var(--label-3, rgba(235, 235, 245, 0.45));
+    --npg-fill: var(--fill, rgba(118, 118, 128, 0.24));
+    --npg-frost: var(--lg-frost, rgba(18, 24, 36, 0.42));
+    --npg-frost-strong: var(--lg-frost-strong, rgba(18, 24, 36, 0.6));
+    --npg-edge: var(--lg-edge, rgba(255, 255, 255, 0.12));
+    --npg-glow: var(--lg-glow, rgba(255, 255, 255, 0.05));
+    --npg-shadow: var(--lg-shadow, rgba(0, 0, 0, 0.25));
+    --npg-ambient-opacity: 0.42;
+  }
+}
+/* Explicit theme on an ancestor overrides the system preference. */
+[data-theme="light"] .now-playing-glass {
+  --npg-label: var(--label, #1c1c1e);
+  --npg-label-2: var(--label-2, rgba(60, 60, 67, 0.6));
+  --npg-label-3: var(--label-3, rgba(60, 60, 67, 0.45));
+  --npg-fill: var(--fill, rgba(118, 118, 128, 0.12));
+  --npg-frost: var(--lg-frost, rgba(255, 255, 255, 0.5));
+  --npg-frost-strong: var(--lg-frost-strong, rgba(255, 255, 255, 0.62));
+  --npg-edge: var(--lg-edge, rgba(0, 0, 0, 0.12));
+  --npg-glow: var(--lg-glow, rgba(0, 0, 0, 0.05));
+  --npg-shadow: var(--lg-shadow, rgba(17, 17, 26, 0.08));
+  --npg-ambient-opacity: 0.34;
+}
+[data-theme="dark"] .now-playing-glass {
+  --npg-label: var(--label, #fff);
+  --npg-label-2: var(--label-2, rgba(235, 235, 245, 0.6));
+  --npg-label-3: var(--label-3, rgba(235, 235, 245, 0.45));
+  --npg-fill: var(--fill, rgba(118, 118, 128, 0.24));
+  --npg-frost: var(--lg-frost, rgba(18, 24, 36, 0.42));
+  --npg-frost-strong: var(--lg-frost-strong, rgba(18, 24, 36, 0.6));
+  --npg-edge: var(--lg-edge, rgba(255, 255, 255, 0.12));
+  --npg-glow: var(--lg-glow, rgba(255, 255, 255, 0.05));
+  --npg-shadow: var(--lg-shadow, rgba(0, 0, 0, 0.25));
+  --npg-ambient-opacity: 0.42;
+}
+
+/* ---------- glass materials (self-contained; mirrors liquid-glass-kit) ---------- */
+.npg-glass {
+  background: var(--npg-frost);
+  -webkit-backdrop-filter: blur(12px) saturate(1.7);
+  backdrop-filter: blur(12px) saturate(1.7);
+  box-shadow:
+    inset 0 0 2px 1px var(--npg-edge),
+    inset 0 0 10px 4px var(--npg-glow),
+    0 4px 16px var(--npg-shadow),
+    0 8px 24px var(--npg-shadow);
+}
+.npg-panel {
+  background: var(--npg-frost-strong);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  backdrop-filter: blur(16px) saturate(1.8);
+  box-shadow:
+    inset 0 0 2px 1px var(--npg-edge),
+    inset 0 0 10px 4px var(--npg-glow),
+    0 4px 16px var(--npg-shadow),
+    0 8px 24px var(--npg-shadow),
+    0 16px 56px var(--npg-shadow);
+}
+.npg-chip {
+  background: var(--npg-frost);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow:
+    inset 0 0 2px 1px var(--npg-edge),
+    inset 0 0 8px 3px var(--npg-glow),
+    0 2px 8px var(--npg-shadow);
+}
+
+/* ---------- mini variant (disc ↔ card morph) ---------- */
+.npg-mini { position: relative; width: 44px; height: 44px; }
+
+.npg-disc-btn {
+  position: absolute; inset: 0; border: 0; padding: 0; margin: 0;
+  border-radius: 22px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+
+.npg-card {
+  position: absolute; left: 0; top: 0; z-index: 10;
+  display: flex; align-items: center; min-height: 60px; width: max-content;
+  overflow: hidden; padding: 8px 16px 8px 60px;
+  color: var(--npg-label); text-decoration: none; cursor: pointer;
+}
+
+.npg-cover {
+  position: absolute; z-index: 20; overflow: hidden; pointer-events: none;
+}
+.npg-cover-inner { display: block; width: 100%; height: 100%; }
+.npg-cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.npg-cover-fallback {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%; background: var(--npg-fill); color: var(--npg-label-2);
+}
+
+.npg-detail { position: relative; z-index: 1; min-width: 0; text-align: left; }
+.npg-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--npg-label-3);
+}
+.npg-title {
+  display: inline-block; white-space: nowrap;
+  font-size: 13.5px; font-weight: 600; color: var(--npg-label);
+}
+.npg-truncate { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.npg-artist { font-weight: 400; color: var(--npg-label-2); }
+.npg-title-clip { display: block; max-width: min(184px, 46vw); overflow: hidden; }
+
+/* ---------- card variant (static chip) ---------- */
+.npg-card-pill {
+  display: inline-flex; align-items: center; gap: 10px; max-width: 100%;
+  border-radius: 9999px; padding: 6px 16px 6px 6px;
+  color: var(--npg-label); text-decoration: none;
+}
+.npg-card-cover {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 9999px; object-fit: cover;
+}
+
+/* ---------- "now playing" pulsing dot (card variant) ---------- */
+.npg-live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--npg-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--npg-accent) 60%, transparent);
+  animation: npg-pulse 2s ease-out infinite;
+}
+@keyframes npg-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--npg-accent) 55%, transparent); }
+  70% { box-shadow: 0 0 0 5px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ---------- collapsed disc live halo ---------- */
+.npg-halo {
+  position: absolute; inset: 0; z-index: 0; border-radius: 9999px; pointer-events: none;
+  animation: npg-halo 2.4s ease-out infinite;
+}
+@keyframes npg-halo {
+  0%   { box-shadow: 0 0 7px 1px color-mix(in srgb, var(--npg-accent) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--npg-accent) 50%, transparent); }
+  70%  { box-shadow: 0 0 7px 1px color-mix(in srgb, var(--npg-accent) 30%, transparent), 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 7px 1px color-mix(in srgb, var(--npg-accent) 70%, transparent), 0 0 0 0 transparent; }
+}
+
+/* ---------- vinyl spin (live cover) ---------- */
+.npg-disc { animation: npg-spin 9s linear infinite; }
+@keyframes npg-spin { to { transform: rotate(360deg); } }
+
+/* ---------- dynamic equalizer (next to the card label) ---------- */
+.npg-eq {
+  display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; line-height: 0;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.npg-eq > span { width: 2.5px; height: 28%; border-radius: 1px; background: var(--npg-accent); }
+.npg-eq-live > span { animation: npg-eq-bounce 0.9s ease-in-out infinite; }
+.npg-eq-live > span:nth-child(1) { animation-delay: -0.20s; animation-duration: 0.95s; }
+.npg-eq-live > span:nth-child(2) { animation-delay: -0.50s; animation-duration: 1.15s; }
+.npg-eq-live > span:nth-child(3) { animation-delay: -0.35s; animation-duration: 0.80s; }
+.npg-eq-live > span:nth-child(4) { animation-delay: -0.65s; animation-duration: 1.05s; }
+@keyframes npg-eq-bounce { 0%, 100% { height: 22%; } 50% { height: 100%; } }
+
+/* ---------- expanded-card ambient backdrop (blurred cover) ---------- */
+.npg-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.npg-ambient::before {
+  content: ""; position: absolute; inset: -45%;
+  background-image: var(--np-art); background-size: cover; background-position: center;
+  filter: blur(30px) saturate(1.6); opacity: var(--npg-ambient-opacity);
+}
+
+/* ---------- title marquee (only when it overflows) ---------- */
+.npg-title-marquee { animation: npg-marquee 8s ease-in-out infinite alternate; will-change: transform; }
+@keyframes npg-marquee {
+  0%, 18% { transform: translateX(0); }
+  82%, 100% { transform: translateX(calc(-1 * var(--np-scroll, 0px))); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .npg-live-dot, .npg-halo, .npg-disc, .npg-title-marquee { animation: none; }
+  .npg-eq-live > span { animation: none; height: 55%; }
+  .npg-halo { box-shadow: 0 0 6px 1px color-mix(in srgb, var(--npg-accent) 55%, transparent); }
+}
