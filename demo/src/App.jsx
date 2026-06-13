@@ -5,8 +5,17 @@ import 'now-playing-glass/styles.css';
 const SONGS = [
   { name: 'Midnight City', artist: 'M83', art: 'https://picsum.photos/seed/midnight/300', color: '#7c5cff' },
   { name: 'リライト', artist: 'ASIAN KUNG-FU GENERATION', art: 'https://picsum.photos/seed/rewrite/300', color: '#ff5c8a' },
+  { name: 'DRIP', artist: 'BABYMONSTER', art: 'https://picsum.photos/seed/babymonster/300', color: '#ff3b6b' },
   { name: 'Topia', artist: 'Crystal Castles', art: 'https://picsum.photos/seed/topia/300', color: '#2fd6c4' },
 ];
+
+const q = (s) => encodeURIComponent(`${s.name} ${s.artist}`);
+const SERVICES = {
+  spotify: { label: 'Spotify', url: (s) => `https://open.spotify.com/search/${q(s)}` },
+  apple: { label: 'Apple Music', url: (s) => `https://music.apple.com/search?term=${q(s)}` },
+  youtube: { label: 'YouTube', url: (s) => `https://music.youtube.com/search?q=${q(s)}` },
+  off: { label: 'no link', url: () => null },
+};
 
 function Seg({ label, value, options, onChange }) {
   return (
@@ -14,11 +23,7 @@ function Seg({ label, value, options, onChange }) {
       <span className="seg-label">{label}</span>
       <div className="seg-track">
         {options.map((o) => (
-          <button
-            key={String(o.value)}
-            className={`seg-btn${value === o.value ? ' on' : ''}`}
-            onClick={() => onChange(o.value)}
-          >
+          <button key={String(o.value)} className={`seg-btn${value === o.value ? ' on' : ''}`} onClick={() => onChange(o.value)}>
             {o.label}
           </button>
         ))}
@@ -27,25 +32,32 @@ function Seg({ label, value, options, onChange }) {
   );
 }
 
-const q = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
+const params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
 
 export default function App() {
-  const [variant, setVariant] = useState(q.get('v') === 'card' ? 'card' : 'mini');
-  const [align, setAlign] = useState(q.get('align') === 'right' ? 'right' : 'left');
-  const [live, setLive] = useState(q.get('state') !== 'recent');
-  const [theme, setTheme] = useState(q.get('theme') === 'light' ? 'light' : 'dark');
+  const [variant, setVariant] = useState(params.get('v') === 'card' ? 'card' : 'mini');
+  const [align, setAlign] = useState(params.get('align') === 'right' ? 'right' : 'left');
+  const [live, setLive] = useState(params.get('state') !== 'recent');
+  const [theme, setTheme] = useState(params.get('theme') === 'light' ? 'light' : 'dark');
   const [hasArt, setHasArt] = useState(true);
-  const [hasUrl, setHasUrl] = useState(true);
+  const [service, setService] = useState('spotify');
   const [idx, setIdx] = useState(0);
 
   useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
+
+  // ?open=1 → pop the mini open on load (handy for sharing a state / screenshots).
+  useEffect(() => {
+    if (params.get('open') !== '1') return;
+    const t = setTimeout(() => document.querySelector('.npg-disc-btn')?.click(), 350);
+    return () => clearTimeout(t);
+  }, []);
 
   const base = SONGS[idx];
   const song = {
     name: base.name,
     artist: base.artist,
     art: hasArt ? base.art : null,
-    url: hasUrl ? '#' : null,
+    url: SERVICES[service].url(base),
     nowplaying: live,
     color: base.color,
   };
@@ -88,10 +100,10 @@ export default function App() {
           options={[{ label: 'dark', value: 'dark' }, { label: 'light', value: 'light' }]} />
         <Seg label="cover art" value={hasArt} onChange={setHasArt}
           options={[{ label: 'on', value: true }, { label: 'off', value: false }]} />
-        <Seg label="link" value={hasUrl} onChange={setHasUrl}
-          options={[{ label: 'on', value: true }, { label: 'off', value: false }]} />
+        <Seg label="open in" value={service} onChange={setService}
+          options={Object.entries(SERVICES).map(([value, s]) => ({ label: s.label, value }))} />
         <Seg label="track" value={idx} onChange={setIdx}
-          options={SONGS.map((s, i) => ({ label: s.name.slice(0, 10), value: i }))} />
+          options={SONGS.map((s, i) => ({ label: s.name.slice(0, 11), value: i }))} />
       </section>
 
       <section className="usage">

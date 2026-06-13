@@ -108,8 +108,11 @@
   overflow: hidden; padding: 8px 16px 8px 60px;
   color: var(--npg-label); text-decoration: none;
 }
-/* align="right": 從右上角錨點往左長(放右上角才不會撐出畫面外) */
-.npg-card--right { left: auto; right: 0; padding: 8px 60px 8px 16px; }
+/* align="right": 從右上角錨點往左長(放右上角才不會撐出畫面外)。
+   文字鏡像到右側貼著封面(否則文字留在左邊、和右側封面間出現突兀空隙)。 */
+.npg-card--right { left: auto; right: 0; padding: 8px 60px 8px 16px; justify-content: flex-end; }
+.npg-card--right .npg-detail { text-align: right; }
+.npg-card--right .npg-label { justify-content: flex-end; }
 
 .npg-cover {
   position: absolute; z-index: 20; overflow: hidden; pointer-events: none;
