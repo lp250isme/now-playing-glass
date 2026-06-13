@@ -149,6 +149,21 @@
   width: 40px; height: 40px; flex-shrink: 0; border-radius: 9999px; object-fit: cover;
 }
 
+/* ---------- playback progress (shown when song.duration is set) ---------- */
+.npg-progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2.5px; z-index: 2;
+  background: color-mix(in srgb, var(--npg-label) 12%, transparent);
+}
+.npg-progress-fill { display: block; height: 100%; background: var(--npg-accent); transition: width 0.4s ease; }
+/* chip variant: a static line below the title (not the card's bottom edge) */
+.npg-progress--chip { position: static; margin-top: 5px; height: 2.5px; border-radius: 2px; overflow: hidden; }
+
+/* ---------- screen-reader-only live region ---------- */
+.npg-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
 /* ---------- "now playing" pulsing dot (card variant) ---------- */
 .npg-live-dot {
   width: 6px; height: 6px; border-radius: 50%; background: var(--npg-accent);

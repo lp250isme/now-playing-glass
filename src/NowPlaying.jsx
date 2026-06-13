@@ -19,19 +19,21 @@ const textItem = {
   show: { opacity: 1, x: 0, transition: { duration: 0.24, ease: [0.2, 0.85, 0.25, 1] } },
 };
 
+const pctOf = (song) =>
+  song && song.duration > 0 ? Math.min(100, Math.max(0, ((song.progress || 0) / song.duration) * 100)) : null;
+
 /**
  * NowPlaying — presentational "now playing / recently played" widget.
  *
  * Purely visual: you pass it a `song` (from Last.fm, Spotify, Apple Music,
  * whatever) and it renders the glass widget. No fetching happens inside.
  *
- *  variant="mini":  the album disc — tap to expand into a full card with a
- *    Dynamic-Island-style morph (same cover travels via framer `layout` from
- *    disc into the card; the card springs in around it). Live → halo + spin.
+ *  variant="mini":  the album disc — tap to expand into a Dynamic-Island-style card.
  *  variant="card":  a static glass-chip card (kept for simpler placements).
  *
- *  `onRefresh` fires when the user opens / clicks the widget — wire it to
- *  re-fetch your data so the card shows the truly-current track.
+ *  `onRefresh` fires when opened — wire it to re-fetch so the card is current.
+ *  `open`/`onOpenChange` make the mini's open state controllable; `openOnHover`
+ *  opens it on hover (desktop). `align="auto"` expands toward whichever side has room.
  */
 export default function NowPlaying({
   song,
@@ -40,15 +42,27 @@ export default function NowPlaying({
   lang = 'en',
   labels,
   onRefresh,
+  open: controlledOpen,
+  onOpenChange,
+  openOnHover = false,
   className,
 }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const [autoGrow, setAutoGrow] = useState('left');
   const [marquee, setMarquee] = useState(false);
   const [scroll, setScroll] = useState(0);
   const ref = useRef(null);
   const clipRef = useRef(null);
   const titleRef = useRef(null);
   const reduce = useReducedMotion();
+
+  const isControlled = typeof controlledOpen === 'boolean';
+  const open = isControlled ? controlledOpen : openState;
+  const setOpen = (v) => {
+    if (v === open) return;
+    if (!isControlled) setOpenState(v);
+    if (typeof onOpenChange === 'function') onOpenChange(v);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -57,7 +71,7 @@ export default function NowPlaying({
     document.addEventListener('pointerdown', onDoc);
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('pointerdown', onDoc); document.removeEventListener('keydown', onKey); };
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Measure whether the title overflows the fixed column; only then marquee it.
   useEffect(() => {
@@ -81,6 +95,11 @@ export default function NowPlaying({
   const accentStyle = song.color ? { '--np-accent': song.color } : undefined;
   const rootClass = (extra) => `now-playing-glass${className ? ` ${className}` : ''}${extra ? ` ${extra}` : ''}`;
   const refresh = () => { if (typeof onRefresh === 'function') onRefresh(); };
+  const pct = pctOf(song);
+
+  // Polite live region: announces the track to screen readers when it changes,
+  // even while the widget is collapsed (a "now playing" widget changes on its own).
+  const announce = <span className="npg-sr-only" aria-live="polite">{`${label}: ${song.name} — ${song.artist}`}</span>;
 
   const musicGlyph = (size) => (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -89,14 +108,23 @@ export default function NowPlaying({
   );
 
   if (variant === 'mini') {
-    // Anti-ellipse trick: the glass shell only fades + uniformly scales (uniform
-    // scale never warps the corner radius into an ellipse) — no wide-card↔disc
-    // non-uniform geometry morph. The cover is a separate top layer that just
-    // translates/scales between disc and card positions (always square, clean).
+    // Anti-ellipse trick: the glass shell only fades + uniformly scales; the cover
+    // is a separate top layer translating/scaling between disc and card positions.
     const lt = reduce ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 40, mass: 0.7 };
-    // Expand direction: "left" grows right from a left anchor (default);
-    // "right" grows left from a right anchor (so a right-corner placement doesn't overflow).
-    const grow = align === 'right' ? 'right' : 'left';
+    // Expand direction. "auto" picks the side with more room (measured on open).
+    const grow = align === 'auto' ? autoGrow : (align === 'right' ? 'right' : 'left');
+
+    const doOpen = (withRefresh) => {
+      if (align === 'auto' && ref.current) {
+        const r = ref.current.getBoundingClientRect();
+        setAutoGrow(r.left + r.width / 2 > window.innerWidth / 2 ? 'right' : 'left');
+      }
+      setOpen(true);
+      if (withRefresh) refresh();
+    };
+    const hoverProps = openOnHover
+      ? { onMouseEnter: () => doOpen(false), onMouseLeave: () => setOpen(false) }
+      : undefined;
 
     const coverImg = song.art ? (
       // eslint-disable-next-line @next/next/no-img-element
@@ -130,11 +158,15 @@ export default function NowPlaying({
             </span>
           </motion.span>
         </motion.span>
+        {pct !== null && (
+          <span className="npg-progress" aria-hidden><span className="npg-progress-fill" style={{ width: `${pct}%` }} /></span>
+        )}
       </>
     );
 
     return (
-      <div ref={ref} className={rootClass('npg-mini')} style={accentStyle}>
+      <div ref={ref} className={rootClass('npg-mini')} style={accentStyle} {...hoverProps}>
+        {announce}
         {/* live halo (collapsed), tinted by --np-accent (cover color) */}
         {!open && live && <span className="npg-halo" aria-hidden />}
 
@@ -143,7 +175,7 @@ export default function NowPlaying({
           {!open && (
             <motion.button
               key="disc"
-              onClick={() => { setOpen(true); refresh(); }}
+              onClick={() => doOpen(true)}
               aria-label={label}
               aria-expanded={false}
               initial={{ opacity: 0 }}
@@ -172,11 +204,10 @@ export default function NowPlaying({
           )}
         </AnimatePresence>
 
-        {/* cover: always present, top layer, click-through (clicks fall to disc/card below);
-            translates+scales between disc and card positions (square, uniform, clean) */}
+        {/* cover: always present, top layer, click-through; translates+scales between
+            disc and card positions. key by grow so a runtime align flip remounts it
+            (otherwise a stale left/right inline style over-constrains → it overflows). */}
         <motion.div
-          // key by grow: if `align` flips at runtime, remount so no stale `left`/`right`
-          // inline style lingers (over-constrains the cover → it overflows the card edge).
           key={grow}
           aria-hidden
           className="npg-cover"
@@ -208,11 +239,14 @@ export default function NowPlaying({
       <span className="npg-title npg-truncate" style={{ display: 'block' }}>
         {song.name}<span className="npg-artist"> — {song.artist}</span>
       </span>
+      {pct !== null && (
+        <span className="npg-progress npg-progress--chip" aria-hidden><span className="npg-progress-fill" style={{ width: `${pct}%` }} /></span>
+      )}
     </span>
   );
   return song.url ? (
-    <a href={song.url} target="_blank" rel="noopener noreferrer" onClick={refresh} className={rootClass('npg-chip npg-card-pill')} style={accentStyle}>{cover}{detail}</a>
+    <a href={song.url} target="_blank" rel="noopener noreferrer" onClick={refresh} className={rootClass('npg-chip npg-card-pill')} style={accentStyle}>{announce}{cover}{detail}</a>
   ) : (
-    <span className={rootClass('npg-chip npg-card-pill')} style={accentStyle}>{cover}{detail}</span>
+    <span className={rootClass('npg-chip npg-card-pill')} style={accentStyle}>{announce}{cover}{detail}</span>
   );
 }

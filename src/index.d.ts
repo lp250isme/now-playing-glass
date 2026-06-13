@@ -15,6 +15,10 @@ export interface NowPlayingSong {
   /** Accent color (e.g. a vibrant color extracted from the cover) used for the
    *  halo / equalizer / pulse. Falls back to a green. Any CSS color. */
   color?: string | null;
+  /** Elapsed playback position in ms. With `duration`, draws a progress bar. */
+  progress?: number;
+  /** Total track length in ms. Progress bar shows only when this is set. */
+  duration?: number;
 }
 
 export interface NowPlayingLabels {
@@ -31,9 +35,10 @@ export interface NowPlayingProps {
    *  "card" = a static glass-chip card. Default: "card". */
   variant?: 'mini' | 'card';
   /** (mini only) Expand direction. "left" grows right from a left anchor;
-   *  "right" grows left from a right anchor — use it when the disc sits at a
-   *  right-hand corner so the card doesn't overflow off-screen. Default: "left". */
-  align?: 'left' | 'right';
+   *  "right" grows left from a right anchor (for a right-hand corner so the card
+   *  doesn't overflow); "auto" picks the side with more room, measured on open.
+   *  Default: "left". */
+  align?: 'left' | 'right' | 'auto';
   /** Built-in label language. Default: "en". Ignored for fields you set via `labels`. */
   lang?: 'en' | 'zh';
   /** Override the two labels for full i18n control. */
@@ -41,6 +46,12 @@ export interface NowPlayingProps {
   /** Called when the user opens / clicks the widget — wire it to re-fetch your
    *  data so the card reflects the truly-current track. */
   onRefresh?: () => void;
+  /** (mini only) Controlled open state. Omit for uncontrolled (internal state). */
+  open?: boolean;
+  /** (mini only) Fired whenever the open state changes (controlled or not). */
+  onOpenChange?: (open: boolean) => void;
+  /** (mini only) Open on hover (desktop pointers). Default: false. */
+  openOnHover?: boolean;
   /** Extra class on the root element. */
   className?: string;
 }

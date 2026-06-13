@@ -58,16 +58,18 @@ which handles initial load + polling + pause-while-hidden + on-demand refresh
 |---|---|---|---|
 | `song` | `Song \| null` | — | `null` or no `name` → renders nothing |
 | `variant` | `"mini" \| "card"` | `"card"` | `mini` = disc that morphs open; `card` = static chip |
-| `align` | `"left" \| "right"` | `"left"` | (mini) expand direction — use `"right"` at a right-hand corner so the card doesn't overflow off-screen |
+| `align` | `"left" \| "right" \| "auto"` | `"left"` | (mini) expand direction. `"right"` for a right-hand corner; `"auto"` picks the side with more room (measured on open) |
 | `lang` | `"en" \| "zh"` | `"en"` | built-in label language |
 | `labels` | `{ nowPlaying?, recentlyPlayed? }` | — | override labels for full i18n |
 | `onRefresh` | `() => void` | — | called when opened — re-fetch your data here |
+| `open` / `onOpenChange` | `boolean` / `(open) => void` | — | (mini) make the open state controlled; `onOpenChange` fires on every change |
+| `openOnHover` | `boolean` | `false` | (mini) open on hover (desktop pointers) |
 | `className` | `string` | — | extra class on the root |
 
-**`Song`**: `{ name, artist, art?, url?, nowplaying?, color? }`. Set
-`nowplaying: true` for the live treatment (halo + spinning cover + bouncing
-equalizer). `color` (e.g. a vibrant color extracted from the cover) tints the
-halo/equalizer; it falls back to green.
+**`Song`**: `{ name, artist, art?, url?, nowplaying?, color?, progress?, duration? }`.
+Set `nowplaying: true` for the live treatment (halo + spinning cover + bouncing
+equalizer). `color` tints the halo/equalizer (falls back to green). Set
+`duration` (and `progress`) in **ms** to show a playback progress bar.
 
 ### `useNowPlaying` (optional)
 
@@ -91,6 +93,32 @@ const { song, refresh } = useNowPlaying({
 
 It only touches `react` — your data source (Last.fm, Spotify, your own API
 route) stays entirely yours, so no provider lock-in and no exposed API keys.
+
+### `useLastfm` (optional, drop-in)
+
+The most common source, wired for you (Last.fm read keys are safe client-side):
+
+```jsx
+import { NowPlaying } from 'now-playing-glass';
+import { useLastfm } from 'now-playing-glass/lastfm';
+
+const { song, refresh } = useLastfm({ user: 'YOUR_USER', apiKey: 'YOUR_KEY' });
+<NowPlaying song={song} variant="mini" onRefresh={refresh} />;
+```
+
+### Draggable (recipe)
+
+Dragging isn't built in (a now-playing widget is usually a fixed corner element).
+If you want it, wrap the widget in your own draggable container — `align="auto"`
+keeps the card expanding toward the side with room as it moves:
+
+```jsx
+import { motion } from 'framer-motion';
+
+<motion.div drag dragMomentum={false} style={{ position: 'fixed', top: 16, left: 16 }}>
+  <NowPlaying song={song} variant="mini" align="auto" onRefresh={refresh} />
+</motion.div>;
+```
 
 ### Theming
 
@@ -156,15 +184,17 @@ import 'now-playing-glass/styles.css';
 |---|---|---|---|
 | `song` | `Song \| null` | — | `null` 或沒有 `name` → 不渲染 |
 | `variant` | `"mini" \| "card"` | `"card"` | `mini`＝圓盤形變展開；`card`＝靜態 chip |
-| `align` | `"left" \| "right"` | `"left"` | (mini) 展開方向；放右側角落用 `"right"`,卡片才不會超出畫面 |
+| `align` | `"left" \| "right" \| "auto"` | `"left"` | (mini) 展開方向；右側角落用 `"right"`；`"auto"` 開卡時量空間自動挑邊 |
 | `lang` | `"en" \| "zh"` | `"en"` | 內建文案語言 |
 | `labels` | `{ nowPlaying?, recentlyPlayed? }` | — | 覆寫文案，完整 i18n 控制 |
 | `onRefresh` | `() => void` | — | 點開時呼叫 —— 在此重抓資料 |
+| `open` / `onOpenChange` | `boolean` / `(open) => void` | — | (mini) 受控開合；`onOpenChange` 每次變更觸發 |
+| `openOnHover` | `boolean` | `false` | (mini) 桌機滑鼠移上去就展開 |
 | `className` | `string` | — | 根元素額外 class |
 
-**`Song`**：`{ name, artist, art?, url?, nowplaying?, color? }`。`nowplaying: true`
-進入 live 樣式（光環＋封面慢轉＋等化器跳動）；`color`（例如由封面抽出的
-vibrant 色）為光環/等化器上色，沒給就退回綠色。
+**`Song`**：`{ name, artist, art?, url?, nowplaying?, color?, progress?, duration? }`。
+`nowplaying: true` 進 live 樣式（光環＋封面慢轉＋等化器跳動）；`color` 為光環/等化器上色（沒給退綠）；
+給 `duration`(＋`progress`)（**ms**）會畫播放進度條。
 
 ### `useNowPlaying`（選用）
 
@@ -186,6 +216,31 @@ const { song, refresh } = useNowPlaying({
 ```
 
 只依賴 `react`，資料源（Last.fm / Spotify / 自家 API）完全是你的，不綁特定供應商、不外洩 key。
+
+### `useLastfm`（選用、即插即用）
+
+最常見的來源直接幫你接好（Last.fm read key 可安全放前端）：
+
+```jsx
+import { NowPlaying } from 'now-playing-glass';
+import { useLastfm } from 'now-playing-glass/lastfm';
+
+const { song, refresh } = useLastfm({ user: 'YOUR_USER', apiKey: 'YOUR_KEY' });
+<NowPlaying song={song} variant="mini" onRefresh={refresh} />;
+```
+
+### 可拖曳（recipe）
+
+拖曳不內建（now-playing 多半是固定角落元件）。要的話用自己的拖曳容器包起來，
+`align="auto"` 會隨它移動自動往有空間的那側展開：
+
+```jsx
+import { motion } from 'framer-motion';
+
+<motion.div drag dragMomentum={false} style={{ position: 'fixed', top: 16, left: 16 }}>
+  <NowPlaying song={song} variant="mini" align="auto" onRefresh={refresh} />
+</motion.div>;
+```
 
 ### 主題
 

@@ -4,10 +4,10 @@ import 'now-playing-glass/styles.css';
 
 const ART = 'https://is1-ssl.mzstatic.com/image/thumb';
 const SONGS = [
-  { name: 'DRIP', artist: 'BABYMONSTER', color: '#ff3b6b', art: `${ART}/Music221/v4/b9/e1/ef/b9e1ef3a-e3eb-8152-e91b-20aca0fc9ffd/BM_DRIP_Digital-Cover_4000.jpg/600x600bb.jpg` },
-  { name: 'Midnight City', artist: 'M83', color: '#7c5cff', art: `${ART}/Music211/v4/cb/7b/a9/cb7ba903-b5f1-cc21-90db-7a81b7aa0997/724596951057.jpg/600x600bb.jpg` },
-  { name: 'リライト', artist: 'ASIAN KUNG-FU GENERATION', color: '#ff5c8a', art: `${ART}/Music221/v4/9b/90/54/9b90547e-6743-bd7b-4d17-c6a485c0124e/4560427295664.jpg/600x600bb.jpg` },
-  { name: 'Not In Love', artist: 'Crystal Castles', color: '#2fd6c4', art: `${ART}/Music113/v4/d2/8b/18/d28b1831-1fae-838d-2e03-60fa66cd6cfc/5400863128470_cover.jpg/600x600bb.jpg` },
+  { name: 'DRIP', artist: 'BABYMONSTER', color: '#ff3b6b', dur: 195000, art: `${ART}/Music221/v4/b9/e1/ef/b9e1ef3a-e3eb-8152-e91b-20aca0fc9ffd/BM_DRIP_Digital-Cover_4000.jpg/600x600bb.jpg` },
+  { name: 'Midnight City', artist: 'M83', color: '#7c5cff', dur: 244000, art: `${ART}/Music211/v4/cb/7b/a9/cb7ba903-b5f1-cc21-90db-7a81b7aa0997/724596951057.jpg/600x600bb.jpg` },
+  { name: 'リライト', artist: 'ASIAN KUNG-FU GENERATION', color: '#ff5c8a', dur: 230000, art: `${ART}/Music221/v4/9b/90/54/9b90547e-6743-bd7b-4d17-c6a485c0124e/4560427295664.jpg/600x600bb.jpg` },
+  { name: 'Not In Love', artist: 'Crystal Castles', color: '#2fd6c4', dur: 234000, art: `${ART}/Music113/v4/d2/8b/18/d28b1831-1fae-838d-2e03-60fa66cd6cfc/5400863128470_cover.jpg/600x600bb.jpg` },
 ];
 
 const q = (s) => encodeURIComponent(`${s.name} ${s.artist}`);
@@ -42,6 +42,8 @@ export default function App() {
   const [theme, setTheme] = useState(params.get('theme') === 'light' ? 'light' : 'dark');
   const [hasArt, setHasArt] = useState(true);
   const [service, setService] = useState('spotify');
+  const [progress, setProgress] = useState(true);
+  const [hover, setHover] = useState(false);
   const [idx, setIdx] = useState(0);
 
   useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
@@ -66,6 +68,8 @@ export default function App() {
     url: SERVICES[service].url(base),
     nowplaying: live,
     color: base.color,
+    duration: progress ? base.dur : undefined,
+    progress: progress ? Math.round(base.dur * 0.42) : undefined,
   };
 
   return (
@@ -84,8 +88,8 @@ export default function App() {
 
       <section className="stage" data-align={align}>
         {variant === 'mini' ? (
-          <div className={`stage-anchor ${align}`}>
-            <NowPlaying song={song} variant="mini" align={align} lang="en" onRefresh={() => {}} />
+          <div className={`stage-anchor ${align === 'right' ? 'right' : 'left'}`}>
+            <NowPlaying song={song} variant="mini" align={align} lang="en" openOnHover={hover} onRefresh={() => {}} />
           </div>
         ) : (
           <div className="stage-center">
@@ -99,7 +103,11 @@ export default function App() {
         <Seg label="variant" value={variant} onChange={setVariant}
           options={[{ label: 'mini', value: 'mini' }, { label: 'card', value: 'card' }]} />
         <Seg label="align" value={align} onChange={setAlign}
-          options={[{ label: 'left', value: 'left' }, { label: 'right', value: 'right' }]} />
+          options={[{ label: 'left', value: 'left' }, { label: 'right', value: 'right' }, { label: 'auto', value: 'auto' }]} />
+        <Seg label="open on" value={hover} onChange={setHover}
+          options={[{ label: 'tap', value: false }, { label: 'hover', value: true }]} />
+        <Seg label="progress" value={progress} onChange={setProgress}
+          options={[{ label: 'on', value: true }, { label: 'off', value: false }]} />
         <Seg label="state" value={live} onChange={setLive}
           options={[{ label: 'now playing', value: true }, { label: 'recent', value: false }]} />
         <Seg label="theme" value={theme} onChange={setTheme}
@@ -114,24 +122,21 @@ export default function App() {
 
       <section className="usage">
         <h2>Usage</h2>
-        <pre>{`import { NowPlaying, useNowPlaying } from 'now-playing-glass';
+        <pre>{`import { NowPlaying } from 'now-playing-glass';
+import { useLastfm } from 'now-playing-glass/lastfm';
 import 'now-playing-glass/styles.css';
 
 function TopBar() {
-  // Bring your own data source — Last.fm, Spotify, your API route…
-  const { song, refresh } = useNowPlaying({
-    fetcher: ({ fresh }) =>
-      fetch(fresh ? '/api/now-playing?t=' + Date.now() : '/api/now-playing')
-        .then(r => (r.ok ? r.json() : null))
-        .then(d => d?.song ?? null),
-  });
+  // Drop-in Last.fm source (or useNowPlaying with your own fetcher).
+  const { song, refresh } = useLastfm({ user: 'YOUR_USER', apiKey: 'YOUR_KEY' });
 
   return (
     <NowPlaying
-      song={song}            // { name, artist, art?, url?, nowplaying?, color? }
-      variant="mini"         // "mini" disc→card morph · "card" static chip
-      align="left"           // "left" | "right" — flip for right-corner placement
-      onRefresh={refresh}    // re-fetch on open so it shows the live track
+      song={song}        // { name, artist, art?, url?, nowplaying?, color?, progress?, duration? }
+      variant="mini"     // "mini" disc→card morph · "card" static chip
+      align="auto"       // "left" | "right" | "auto" (expand toward the side with room)
+      openOnHover        // open on hover (desktop); also controllable via open/onOpenChange
+      onRefresh={refresh}
     />
   );
 }`}</pre>
