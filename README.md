@@ -7,7 +7,7 @@ equalizer, blurred-cover ambient backdrop, gentle title marquee, live halo.
 
 [English](#english) | [繁體中文](#繁體中文)
 
-🔗 **Live demo:** [go.kvcc.me/now-playing-glass](https://go.kvcc.me/now-playing-glass) · in the wild: [kvcc.me](https://kvcc.me) (the disc at the top-left)
+🔗 (Live demo)[go.kvcc.me/now-playing-glass](https://go.kvcc.me/now-playing-glass) · in the wild: [kvcc.me](https://kvcc.me) (the disc at the top-left)
 
 ![now-playing-glass](https://raw.githubusercontent.com/lp250isme/now-playing-glass/main/assets/demo.png)
 
