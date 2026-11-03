@@ -1,11 +1,12 @@
 // Cloudflare Workers Static Assets（Vercel 遷移，vercel.json 保留供退回）。
 // 純靜態：沒有 main，所有請求由 assets 直接回應，不吃 Worker CPU/請求額度。
-// 切網域時才加 routes（例："routes": [{ "pattern": "<子網域>.kvcc.me", "custom_domain": true }]），現在加會撞既有 DNS 紀錄。
+// 2026-11-03 起正式入口 now-playing-glass.kvcc.me（go.kvcc.me/now-playing-glass 指這裡）；Vercel 版不再用。
 // 部署：npm install && (cd demo && npm install && npm run build) && npx wrangler@latest deploy
 {
   "name": "now-playing-glass",
   "compatibility_date": "2026-10-30",
   "workers_dev": true,
+  "routes": [{ "pattern": "now-playing-glass.kvcc.me", "custom_domain": true }],
   "assets": {
     "directory": "./demo/dist",
     "not_found_handling": "single-page-application"
